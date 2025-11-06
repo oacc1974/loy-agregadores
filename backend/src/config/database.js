@@ -3,10 +3,15 @@ const logger = require('../utils/logger');
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    // Verificar que existe la URI
+    if (!process.env.MONGODB_URI) {
+      throw new Error('MONGODB_URI no está definida en las variables de entorno');
+    }
+
+    logger.info('🔄 Conectando a MongoDB...');
+    
+    // Las opciones useNewUrlParser y useUnifiedTopology ya no son necesarias
+    const conn = await mongoose.connect(process.env.MONGODB_URI);
 
     logger.info(`✅ MongoDB conectado: ${conn.connection.host}`);
 
@@ -24,7 +29,8 @@ const connectDB = async () => {
     });
 
   } catch (error) {
-    logger.error('❌ Error al conectar MongoDB:', error);
+    logger.error('❌ Error al conectar MongoDB:', error.message);
+    logger.error('URI utilizada:', process.env.MONGODB_URI ? 'Configurada' : 'NO CONFIGURADA');
     process.exit(1);
   }
 };
