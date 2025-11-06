@@ -1,0 +1,20 @@
+{
+  "name": "loy-agregadores",
+  "version": "1.0.0",
+  "description": "Plataforma de integración entre Loyverse y agregadores (Uber Eats, Rappi, etc.)",
+  "private": true,
+  "scripts": {
+    "install:all": "cd backend && npm install && cd ../frontend && npm install",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "start": "cd backend && npm start"
+  },
+  "keywords": ["loyverse", "uber-eats", "rappi", "agregadores", "pos"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
