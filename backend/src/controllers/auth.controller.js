@@ -12,8 +12,21 @@ const generateToken = (userId) => {
 // @route   GET /api/auth/google/callback
 exports.googleCallback = async (req, res) => {
   try {
+    console.log('📞 googleCallback ejecutado');
+    console.log('👤 req.user:', req.user ? 'Presente ✅' : 'NO PRESENTE ❌');
+    
+    if (!req.user) {
+      console.error('❌ No hay usuario en req.user');
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized'
+      });
+    }
+    
     // Usuario ya autenticado por Passport
+    console.log('🔑 Generando token para usuario:', req.user.email);
     const token = generateToken(req.user._id);
+    console.log('✅ Token generado, redirigiendo a frontend...');
 
     // Redirigir al frontend con el token
     res.redirect(`${process.env.FRONTEND_URL}/auth/callback?token=${token}`);
