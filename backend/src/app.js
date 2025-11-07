@@ -27,6 +27,9 @@ console.log('✅ Rutas cargadas exitosamente');
 const app = express();
 console.log('✅ Express app creada');
 
+// Trust proxy - necesario para Railway y otros servicios de hosting
+app.set('trust proxy', 1);
+
 // Configurar Passport
 console.log('📦 Configurando Passport...');
 try {
@@ -47,7 +50,9 @@ app.use(cors({
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100 // límite de 100 requests por ventana
+  max: 100, // límite de 100 requests por ventana
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 app.use('/api/', limiter);
 
