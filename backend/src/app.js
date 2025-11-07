@@ -1,3 +1,5 @@
+console.log('📦 Cargando app.js...');
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -5,21 +7,35 @@ const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const passport = require('passport');
+
+console.log('📦 Cargando logger...');
 const logger = require('./utils/logger');
+
+console.log('📦 Cargando error middleware...');
 const errorMiddleware = require('./middleware/error.middleware');
 
 // Importar rutas
+console.log('📦 Cargando rutas...');
 const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
 const aggregatorRoutes = require('./routes/aggregator.routes');
 const uberRoutes = require('./routes/uber.routes');
 const loyverseRoutes = require('./routes/loyverse.routes');
 const syncRoutes = require('./routes/sync.routes');
+console.log('✅ Rutas cargadas exitosamente');
 
 const app = express();
+console.log('✅ Express app creada');
 
 // Configurar Passport
-require('./config/passport');
+console.log('📦 Configurando Passport...');
+try {
+  require('./config/passport');
+  console.log('✅ Passport configurado');
+} catch (error) {
+  console.error('❌ Error configurando Passport:', error.message);
+  throw error;
+}
 
 // Middlewares de seguridad
 app.use(helmet());
