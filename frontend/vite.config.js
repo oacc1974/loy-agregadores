@@ -16,9 +16,6 @@ export default defineConfig({
       transformMixedEsModules: true,
     },
   },
-  optimizeDeps: {
-    include: ['recharts'],
-  },
   server: {
     port: 5173,
     proxy: {

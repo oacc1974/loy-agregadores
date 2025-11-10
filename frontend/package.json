@@ -16,7 +16,6 @@
     "axios": "^1.6.2",
     "lucide-react": "^0.294.0",
     "date-fns": "^2.30.0",
-    "recharts": "^2.10.3",
     "clsx": "^2.0.0",
     "class-variance-authority": "^0.7.0",
     "tailwind-merge": "^2.1.0",
