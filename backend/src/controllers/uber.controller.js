@@ -238,6 +238,100 @@ exports.getMenu = async (req, res) => {
   }
 };
 
+// @desc    Simular pedido de Uber para pruebas
+// @route   POST /api/uber/simulate-order
+exports.simulateOrder = async (req, res) => {
+  try {
+    const Order = require('../models/Order');
+    
+    // Pedido simulado de Uber
+    const simulatedOrder = {
+      id: `UBER-SIM-${Date.now()}`,
+      display_id: `#${Math.floor(Math.random() * 10000)}`,
+      placed_at: new Date().toISOString(),
+      eater: {
+        first_name: 'Cliente',
+        last_name: 'Simulado',
+        phone: '+593999999999'
+      },
+      delivery: {
+        location: {
+          address: 'Av. Amazonas y Naciones Unidas, Quito'
+        }
+      },
+      cart: {
+        items: [
+          {
+            title: 'Combo Familiar',
+            quantity: 2,
+            price: 1500, // En centavos
+            selected_modifier_groups: [
+              {
+                selected_items: [
+                  {
+                    title: 'Extra Papas',
+                    price: 200
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            title: 'Gaseosa 1.5L',
+            quantity: 1,
+            price: 250
+          }
+        ]
+      },
+      payment: {
+        charges: {
+          subtotal: 3450,
+          tax: 414,
+          delivery_fee: 150,
+          total: 4014
+        },
+        type: 'ONLINE'
+      },
+      estimated_ready_for_pickup_at: new Date(Date.now() + 30 * 60 * 1000).toISOString()
+    };
+
+    // Transformar orden usando el servicio de Uber
+    const UberService = require('../services/uber.service');
+    const config = await UberConfig.findOne({ userId: req.user._id });
+    const uberService = new UberService(config || {});
+    const orderData = uberService.transformOrder(simulatedOrder);
+
+    // Guardar orden en BD
+    const order = await Order.create({
+      userId: req.user._id,
+      aggregatorType: 'uber',
+      aggregatorOrderId: simulatedOrder.id,
+      status: 'pending',
+      orderData
+    });
+
+    logger.info('Pedido simulado de Uber creado:', order._id);
+
+    res.json({
+      success: true,
+      message: 'Pedido simulado creado exitosamente',
+      data: {
+        orderId: order._id,
+        aggregatorOrderId: simulatedOrder.id,
+        orderNumber: orderData.orderNumber,
+        total: orderData.total,
+        status: 'pending'
+      }
+    });
+  } catch (error) {
+    logger.error('Error simulando pedido de Uber:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Error del servidor'
+    });
+  }
+};
+
 // @desc    Webhook de Uber para órdenes
 // @route   POST /api/uber/webhook
 exports.webhook = async (req, res) => {

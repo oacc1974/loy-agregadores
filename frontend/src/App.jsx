@@ -12,6 +12,7 @@ import RappiConfig from './pages/RappiConfig';
 import PedidosYaConfig from './pages/PedidosYaConfig';
 import Orders from './pages/Orders';
 import Logs from './pages/Logs';
+import TestSync from './pages/TestSync';
 import Profile from './pages/Profile';
 
 function App() {
@@ -77,6 +78,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Logs />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/test-sync"
+            element={
+              <ProtectedRoute>
+                <TestSync />
               </ProtectedRoute>
             }
           />

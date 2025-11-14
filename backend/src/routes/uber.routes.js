@@ -6,6 +6,7 @@ const {
   testConnection,
   getOrders,
   getMenu,
+  simulateOrder,
   webhook
 } = require('../controllers/uber.controller');
 const { protect } = require('../middleware/auth.middleware');
@@ -24,5 +25,6 @@ router.put('/config', updateConfig);
 router.post('/test-connection', testConnection);
 router.get('/orders', getOrders);
 router.get('/menu', getMenu);
+router.post('/simulate-order', simulateOrder);
 
 module.exports = router;
