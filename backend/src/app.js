@@ -20,6 +20,8 @@ const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
 const aggregatorRoutes = require('./routes/aggregator.routes');
 const uberRoutes = require('./routes/uber.routes');
+const rappiRoutes = require('./routes/rappi.routes');
+const pedidosyaRoutes = require('./routes/pedidosya.routes');
 const loyverseRoutes = require('./routes/loyverse.routes');
 const syncRoutes = require('./routes/sync.routes');
 console.log('✅ Rutas cargadas exitosamente');
@@ -96,6 +98,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/aggregators', aggregatorRoutes);
 app.use('/api/uber', uberRoutes);
+app.use('/api/rappi', rappiRoutes);
+app.use('/api/pedidosya', pedidosyaRoutes);
 app.use('/api/loyverse', loyverseRoutes);
 app.use('/api/sync', syncRoutes);
 

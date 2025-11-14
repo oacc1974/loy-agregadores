@@ -67,6 +67,10 @@ const Aggregators = () => {
   const handleConfigure = (aggregator) => {
     if (aggregator.aggregatorType === 'uber') {
       navigate('/aggregators/uber');
+    } else if (aggregator.aggregatorType === 'rappi') {
+      navigate('/aggregators/rappi');
+    } else if (aggregator.aggregatorType === 'pedidosya') {
+      navigate('/aggregators/pedidosya');
     }
   };
 

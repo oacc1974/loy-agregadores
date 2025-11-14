@@ -8,6 +8,8 @@ import AuthCallback from './pages/AuthCallback';
 import Dashboard from './pages/Dashboard';
 import Aggregators from './pages/Aggregators';
 import UberConfig from './pages/UberConfig';
+import RappiConfig from './pages/RappiConfig';
+import PedidosYaConfig from './pages/PedidosYaConfig';
 import Orders from './pages/Orders';
 import Logs from './pages/Logs';
 import Profile from './pages/Profile';
@@ -43,6 +45,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <UberConfig />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/aggregators/rappi"
+            element={
+              <ProtectedRoute>
+                <RappiConfig />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/aggregators/pedidosya"
+            element={
+              <ProtectedRoute>
+                <PedidosYaConfig />
               </ProtectedRoute>
             }
           />
