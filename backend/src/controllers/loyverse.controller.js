@@ -7,15 +7,6 @@ const logger = require('../utils/logger');
 // @route   POST /api/loyverse/configure
 exports.configure = async (req, res) => {
   try {
-    const { error } = validateLoyverseConfig(req.body);
-    
-    if (error) {
-      return res.status(400).json({
-        success: false,
-        message: error.details[0].message
-      });
-    }
-
     const { accessToken, storeId, posId, settings } = req.body;
 
     logger.info('Guardando configuración de Loyverse para usuario:', req.user._id);
@@ -26,13 +17,26 @@ exports.configure = async (req, res) => {
     if (config) {
       // Actualizar existente
       logger.info('Actualizando configuración existente');
-      config.credentials.accessToken = accessToken;
-      config.credentials.storeId = storeId;
-      if (posId) config.credentials.posId = posId;
+      
+      // Solo actualizar accessToken si se proporciona uno nuevo
+      if (accessToken) {
+        config.credentials.accessToken = accessToken;
+      }
+      
+      if (storeId) config.credentials.storeId = storeId;
+      if (posId !== undefined) config.credentials.posId = posId;
       if (settings) config.settings = { ...config.settings, ...settings };
+      
       await config.save();
     } else {
-      // Crear nuevo
+      // Crear nuevo - requiere accessToken y storeId
+      if (!accessToken || !storeId) {
+        return res.status(400).json({
+          success: false,
+          message: 'accessToken y storeId son requeridos para crear una nueva configuración'
+        });
+      }
+      
       logger.info('Creando nueva configuración');
       config = await LoyverseConfig.create({
         userId: req.user._id,
