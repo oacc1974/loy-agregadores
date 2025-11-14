@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const { encryptData, decryptData } = require('../utils/encryption');
 
 const loyverseConfigSchema = new mongoose.Schema({
   userId: {
@@ -12,15 +11,7 @@ const loyverseConfigSchema = new mongoose.Schema({
   credentials: {
     accessToken: {
       type: String,
-      required: true,
-      set: function(value) {
-        if (!value) return value;
-        return encryptData(value);
-      },
-      get: function(value) {
-        if (!value) return '';
-        return decryptData(value);
-      }
+      required: true
     },
     storeId: {
       type: String,

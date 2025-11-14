@@ -97,8 +97,8 @@ const LoyverseConfig = () => {
         }
       };
 
-      // Solo incluir accessToken si no es el placeholder
-      if (config.accessToken && config.accessToken !== '***********') {
+      // Solo incluir accessToken si no es el placeholder parcial
+      if (config.accessToken && !config.accessToken.includes('...')) {
         payload.accessToken = config.accessToken;
       }
 
@@ -182,12 +182,12 @@ const LoyverseConfig = () => {
                 name="accessToken"
                 value={config.accessToken}
                 onChange={handleChange}
-                placeholder={config.accessToken === '***********' ? 'Token guardado (oculto por seguridad)' : 'Tu Access Token de Loyverse'}
+                placeholder={config.accessToken?.includes('...') ? 'Token guardado (parcialmente oculto)' : 'Tu Access Token de Loyverse'}
                 required
               />
-              {config.accessToken === '***********' && (
+              {config.accessToken?.includes('...') && (
                 <p className="text-xs text-green-600 mt-1">
-                  ✅ Token guardado. Deja este campo así o ingresa uno nuevo para actualizar.
+                  ✅ Token guardado: {config.accessToken}. Deja este campo así o ingresa uno nuevo para actualizar.
                 </p>
               )}
             </div>

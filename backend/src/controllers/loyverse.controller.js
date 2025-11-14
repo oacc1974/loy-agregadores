@@ -78,9 +78,12 @@ exports.getConfig = async (req, res) => {
       });
     }
 
-    // No enviar access token completo
+    // Mostrar solo los primeros y últimos 4 caracteres del token
     const configData = config.toObject();
-    configData.credentials.accessToken = '***********';
+    const token = configData.credentials.accessToken;
+    if (token && token.length > 8) {
+      configData.credentials.accessToken = token.substring(0, 4) + '...' + token.substring(token.length - 4);
+    }
 
     res.json({
       success: true,
