@@ -5,14 +5,18 @@ import {
   ShoppingBag, 
   FileText, 
   Settings,
-  User
+  User,
+  TestTube,
+  Store
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
 const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
   { icon: Package, label: 'Agregadores', path: '/aggregators' },
+  { icon: Store, label: 'Loyverse', path: '/loyverse/config' },
   { icon: ShoppingBag, label: 'Órdenes', path: '/orders' },
+  { icon: TestTube, label: 'Prueba Sync', path: '/test-sync' },
   { icon: FileText, label: 'Logs', path: '/logs' },
   { icon: User, label: 'Perfil', path: '/profile' },
 ];

@@ -10,6 +10,7 @@ import Aggregators from './pages/Aggregators';
 import UberConfig from './pages/UberConfig';
 import RappiConfig from './pages/RappiConfig';
 import PedidosYaConfig from './pages/PedidosYaConfig';
+import LoyverseConfig from './pages/LoyverseConfig';
 import Orders from './pages/Orders';
 import Logs from './pages/Logs';
 import TestSync from './pages/TestSync';
@@ -62,6 +63,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <PedidosYaConfig />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/loyverse/config"
+            element={
+              <ProtectedRoute>
+                <LoyverseConfig />
               </ProtectedRoute>
             }
           />
