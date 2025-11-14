@@ -18,11 +18,14 @@ exports.configure = async (req, res) => {
 
     const { accessToken, storeId, posId, settings } = req.body;
 
+    logger.info('Guardando configuración de Loyverse para usuario:', req.user._id);
+
     // Buscar o crear configuración
     let config = await LoyverseConfig.findOne({ userId: req.user._id });
 
     if (config) {
       // Actualizar existente
+      logger.info('Actualizando configuración existente');
       config.credentials.accessToken = accessToken;
       config.credentials.storeId = storeId;
       if (posId) config.credentials.posId = posId;
@@ -30,12 +33,19 @@ exports.configure = async (req, res) => {
       await config.save();
     } else {
       // Crear nuevo
+      logger.info('Creando nueva configuración');
       config = await LoyverseConfig.create({
         userId: req.user._id,
         credentials: { accessToken, storeId, posId },
         settings: settings || {}
       });
     }
+
+    logger.info('Configuración guardada exitosamente');
+
+    // Verificar que se guardó correctamente
+    const savedConfig = await LoyverseConfig.findOne({ userId: req.user._id });
+    logger.info('Token guardado (primeros 10 chars):', savedConfig.credentials.accessToken?.substring(0, 10));
 
     res.json({
       success: true,
@@ -46,7 +56,7 @@ exports.configure = async (req, res) => {
     logger.error('Error configurando Loyverse:', error);
     res.status(500).json({
       success: false,
-      message: 'Error del servidor'
+      message: error.message || 'Error del servidor'
     });
   }
 };

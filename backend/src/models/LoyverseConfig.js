@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const CryptoJS = require('crypto-js');
+const { encryptData, decryptData } = require('../utils/encryption');
 
 const loyverseConfigSchema = new mongoose.Schema({
   userId: {
@@ -14,12 +14,12 @@ const loyverseConfigSchema = new mongoose.Schema({
       type: String,
       required: true,
       set: function(value) {
-        return CryptoJS.AES.encrypt(value, process.env.ENCRYPTION_KEY).toString();
+        if (!value) return value;
+        return encryptData(value);
       },
       get: function(value) {
         if (!value) return '';
-        const bytes = CryptoJS.AES.decrypt(value, process.env.ENCRYPTION_KEY);
-        return bytes.toString(CryptoJS.enc.Utf8);
+        return decryptData(value);
       }
     },
     storeId: {

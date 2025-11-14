@@ -23,6 +23,10 @@ class SyncService {
         throw new Error('Configuración de Loyverse no encontrada');
       }
 
+      logger.info('Configuración de Loyverse encontrada');
+      logger.info('Access Token (primeros 10 chars):', loyverseConfig.credentials.accessToken?.substring(0, 10));
+      logger.info('Store ID:', loyverseConfig.credentials.storeId);
+
       // Obtener órdenes pendientes
       const pendingOrders = await Order.find({
         userId,
@@ -37,6 +41,8 @@ class SyncService {
           itemsProcessed: 0
         };
       }
+
+      logger.info(`Sincronizando ${pendingOrders.length} órdenes pendientes`);
 
       const loyverseService = new LoyverseService(loyverseConfig);
 
