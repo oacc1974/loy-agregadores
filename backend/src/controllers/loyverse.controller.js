@@ -85,16 +85,30 @@ exports.getConfig = async (req, res) => {
 // @route   POST /api/loyverse/test-connection
 exports.testConnection = async (req, res) => {
   try {
-    const config = await LoyverseConfig.findOne({ userId: req.user._id });
+    const { accessToken, storeId } = req.body;
 
-    if (!config) {
-      return res.status(404).json({
-        success: false,
-        message: 'Configuración de Loyverse no encontrada'
-      });
+    // Si se envían credenciales en el body, usarlas (para probar antes de guardar)
+    let configToTest;
+    if (accessToken && storeId) {
+      configToTest = {
+        credentials: {
+          accessToken,
+          storeId
+        }
+      };
+    } else {
+      // Si no, buscar configuración guardada
+      configToTest = await LoyverseConfig.findOne({ userId: req.user._id });
+      
+      if (!configToTest) {
+        return res.status(404).json({
+          success: false,
+          message: 'Configuración de Loyverse no encontrada. Proporciona accessToken y storeId.'
+        });
+      }
     }
 
-    const loyverseService = new LoyverseService(config);
+    const loyverseService = new LoyverseService(configToTest);
     const result = await loyverseService.testConnection();
 
     res.json(result);
@@ -102,7 +116,7 @@ exports.testConnection = async (req, res) => {
     logger.error('Error probando conexión con Loyverse:', error);
     res.status(500).json({
       success: false,
-      message: 'Error del servidor'
+      message: error.message || 'Error del servidor'
     });
   }
 };

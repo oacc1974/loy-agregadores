@@ -32,7 +32,10 @@ const LoyverseConfig = () => {
         setConfig(response.data.data);
       }
     } catch (error) {
-      console.error('Error cargando configuración:', error);
+      // Si no existe configuración (404), no es un error, solo no hay config aún
+      if (error.response?.status !== 404) {
+        console.error('Error cargando configuración:', error);
+      }
     } finally {
       setLoading(false);
     }
@@ -72,8 +75,19 @@ const LoyverseConfig = () => {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await api.post('/loyverse/configure', config);
+      const payload = {
+        accessToken: config.accessToken,
+        storeId: config.storeId,
+        posId: config.posId,
+        settings: {
+          defaultTaxRate: parseFloat(config.defaultTaxRate) || 0,
+          defaultPaymentType: config.defaultPaymentType,
+          employeeId: config.employeeId
+        }
+      };
+      await api.post('/loyverse/configure', payload);
       alert('✅ Configuración guardada exitosamente');
+      await loadConfig(); // Recargar configuración
     } catch (error) {
       alert('❌ Error: ' + (error.response?.data?.message || error.message));
     } finally {
