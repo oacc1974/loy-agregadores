@@ -9,7 +9,6 @@ exports.manualSync = async (req, res) => {
   try {
     // Sincronizar solo las órdenes pendientes (no fetch de Uber)
     // Esto es útil para pedidos simulados o cuando ya tienes órdenes en la BD
-    const syncService = new (require('../services/sync.service'))();
     const result = await syncService.syncPendingOrders(req.user._id);
 
     res.json({
