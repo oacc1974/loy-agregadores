@@ -71,13 +71,28 @@ class LoyverseService {
   async createReceipt(orderData) {
     try {
       const receiptData = this.transformOrderToReceipt(orderData);
+      
+      logger.info('Datos del recibo a enviar a Loyverse:', JSON.stringify(receiptData, null, 2));
+      
       const response = await this.client.post('/receipts', receiptData);
       
       logger.info('Recibo creado en Loyverse:', response.data.receipt_number);
       return response.data;
     } catch (error) {
-      logger.error('Error creando recibo en Loyverse:', error.response?.data || error.message);
-      throw new Error(error.response?.data?.message || 'Error al crear recibo en Loyverse');
+      logger.error('Error creando recibo en Loyverse:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        message: error.message
+      });
+      
+      // Lanzar error con más detalles
+      const errorMsg = error.response?.data?.error?.message 
+        || error.response?.data?.message 
+        || error.message 
+        || 'Error al crear recibo en Loyverse';
+      
+      throw new Error(errorMsg);
     }
   }
 
@@ -95,24 +110,18 @@ class LoyverseService {
   // Transformar orden a formato de recibo de Loyverse
   transformOrderToReceipt(orderData) {
     const lineItems = orderData.items.map(item => {
-      const itemTotal = item.price * item.quantity;
       const modifiersTotal = item.modifiers?.reduce((sum, mod) => sum + (mod.price || 0), 0) || 0;
       
       return {
-        item_id: item.loyverseItemId || null, // Si está mapeado
         line_note: item.name,
         quantity: item.quantity,
         price: item.price + modifiersTotal,
-        cost: 0, // Costo no disponible desde agregador
-        line_modifiers: item.modifiers?.map(mod => ({
-          name: mod.name,
-          price: mod.price
-        })) || []
+        cost: 0
       };
     });
 
     // Agregar delivery fee como item adicional si existe
-    if (orderData.deliveryFee > 0) {
+    if (orderData.deliveryFee && orderData.deliveryFee > 0) {
       lineItems.push({
         line_note: 'Delivery Fee',
         quantity: 1,
@@ -121,25 +130,29 @@ class LoyverseService {
       });
     }
 
-    return {
+    // Estructura básica del recibo
+    const receipt = {
       store_id: this.config.credentials.storeId,
-      pos_id: this.config.credentials.posId || null,
-      employee_id: this.config.settings.employeeId || null,
       receipt_type: 'SELL',
-      receipt_date: orderData.orderTime,
-      note: `Orden ${orderData.orderNumber} - ${orderData.customer.name}`,
+      receipt_date: orderData.orderTime || new Date().toISOString(),
+      note: `Orden ${orderData.orderNumber} - ${orderData.customer?.name || 'Cliente'}`,
       line_items: lineItems,
       payments: [{
-        payment_type_id: this.getPaymentTypeId(orderData.paymentMethod),
+        payment_type: 'CASH', // Usar tipo de pago por defecto
         amount: orderData.total
-      }],
-      total_money: orderData.total,
-      total_tax: orderData.tax || 0,
-      customer: {
-        name: orderData.customer.name,
-        phone_number: orderData.customer.phone
-      }
+      }]
     };
+
+    // Agregar campos opcionales solo si existen
+    if (this.config.credentials.posId) {
+      receipt.pos_id = this.config.credentials.posId;
+    }
+    
+    if (this.config.settings?.employeeId) {
+      receipt.employee_id = this.config.settings.employeeId;
+    }
+
+    return receipt;
   }
 
   // Mapear tipo de pago
