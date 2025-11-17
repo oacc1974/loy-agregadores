@@ -12,6 +12,7 @@ const LoyverseConfig = () => {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [testResult, setTestResult] = useState(null);
+  const [hasExistingToken, setHasExistingToken] = useState(false);
   const [config, setConfig] = useState({
     accessToken: '',
     storeId: '',
@@ -31,9 +32,14 @@ const LoyverseConfig = () => {
       const response = await api.get('/loyverse/config');
       if (response.data.data) {
         const loadedConfig = response.data.data;
+        
+        // Verificar si existe un token guardado
+        setHasExistingToken(loadedConfig.hasToken || false);
+        
         // Mantener el formato correcto de los datos
+        // NO cargar el accessToken del backend (viene null por seguridad)
         setConfig({
-          accessToken: loadedConfig.credentials?.accessToken || '',
+          accessToken: '', // Siempre vacío, el usuario debe ingresar uno nuevo si quiere cambiar
           storeId: loadedConfig.credentials?.storeId || '',
           posId: loadedConfig.credentials?.posId || '',
           defaultTaxRate: loadedConfig.settings?.defaultTaxRate || 0,
@@ -86,8 +92,6 @@ const LoyverseConfig = () => {
     setSaving(true);
     setTestResult(null);
     try {
-      // Si el token es '***********', significa que ya está guardado y no cambió
-      // En ese caso, no lo enviamos para evitar sobrescribir con asteriscos
       const payload = {
         storeId: config.storeId,
         posId: config.posId,
@@ -98,21 +102,24 @@ const LoyverseConfig = () => {
         }
       };
 
-      // Solo incluir accessToken si no es el placeholder parcial
-      if (config.accessToken && !config.accessToken.includes('...')) {
+      // Solo incluir accessToken si el usuario ingresó uno nuevo
+      if (config.accessToken && config.accessToken.trim() !== '') {
         payload.accessToken = config.accessToken;
       }
 
       await api.post('/loyverse/configure', payload);
+      
+      // Marcar que ahora existe un token guardado
+      setHasExistingToken(true);
+      
+      // Limpiar el campo de token después de guardar
+      setConfig(prev => ({ ...prev, accessToken: '' }));
       
       // Mostrar mensaje de éxito
       setTestResult({
         success: true,
         message: '✅ Configuración guardada exitosamente. Ahora puedes ir a "Prueba Sync" para simular pedidos.'
       });
-      
-      // NO recargar la configuración porque el backend oculta el token
-      // Los datos ya están en el formulario
     } catch (error) {
       setTestResult({
         success: false,
@@ -142,6 +149,9 @@ const LoyverseConfig = () => {
         defaultPaymentType: 'CASH',
         employeeId: ''
       });
+      
+      // Marcar que ya no existe token
+      setHasExistingToken(false);
       
       setTestResult({
         success: true,
@@ -210,19 +220,19 @@ const LoyverseConfig = () => {
           <CardContent className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-2">
-                Access Token <span className="text-red-500">*</span>
+                Access Token {!hasExistingToken && <span className="text-red-500">*</span>}
               </label>
               <Input
                 type="password"
                 name="accessToken"
                 value={config.accessToken}
                 onChange={handleChange}
-                placeholder={config.accessToken?.includes('...') ? 'Token guardado (parcialmente oculto)' : 'Tu Access Token de Loyverse'}
-                required
+                placeholder={hasExistingToken ? 'Token guardado (deja vacío para mantener el actual)' : 'Tu Access Token de Loyverse'}
+                required={!hasExistingToken}
               />
-              {config.accessToken?.includes('...') && (
+              {hasExistingToken && !config.accessToken && (
                 <p className="text-xs text-green-600 mt-1">
-                  ✅ Token guardado: {config.accessToken}. Deja este campo así o ingresa uno nuevo para actualizar.
+                  ✅ Token guardado. Deja este campo vacío para mantener el actual o ingresa uno nuevo para actualizarlo.
                 </p>
               )}
             </div>
@@ -351,7 +361,7 @@ const LoyverseConfig = () => {
           </Button>
           <Button
             onClick={handleSave}
-            disabled={saving || !config.accessToken || !config.storeId}
+            disabled={saving || (!hasExistingToken && !config.accessToken) || !config.storeId}
             className="flex-1"
           >
             <Save className="mr-2 h-4 w-4" />
@@ -360,7 +370,7 @@ const LoyverseConfig = () => {
         </div>
 
         {/* Botón de Borrar (solo si hay configuración guardada) */}
-        {config.accessToken?.includes('...') && (
+        {hasExistingToken && (
           <div className="flex justify-center">
             <Button
               onClick={handleDelete}

@@ -78,12 +78,10 @@ exports.getConfig = async (req, res) => {
       });
     }
 
-    // Mostrar solo los primeros y últimos 4 caracteres del token
+    // NO enviar el token en absoluto por seguridad
     const configData = config.toObject();
-    const token = configData.credentials.accessToken;
-    if (token && token.length > 8) {
-      configData.credentials.accessToken = token.substring(0, 4) + '...' + token.substring(token.length - 4);
-    }
+    configData.credentials.accessToken = null; // No enviar el token
+    configData.hasToken = true; // Indicar que existe un token guardado
 
     res.json({
       success: true,
