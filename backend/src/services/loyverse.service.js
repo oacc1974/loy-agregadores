@@ -45,6 +45,17 @@ class LoyverseService {
     }
   }
 
+  // Obtener tipos de pago
+  async getPaymentTypes() {
+    try {
+      const response = await this.client.get('/payment_types');
+      return response.data.payment_types || [];
+    } catch (error) {
+      logger.error('Error obteniendo tipos de pago de Loyverse:', error.response?.data || error.message);
+      throw new Error('Error al obtener tipos de pago de Loyverse');
+    }
+  }
+
   // Obtener productos/items
   async getItems(params = {}) {
     try {
@@ -70,7 +81,7 @@ class LoyverseService {
   // Crear recibo (receipt)
   async createReceipt(orderData) {
     try {
-      const receiptData = this.transformOrderToReceipt(orderData);
+      const receiptData = await this.transformOrderToReceipt(orderData);
       
       logger.info('Datos del recibo a enviar a Loyverse:', JSON.stringify(receiptData, null, 2));
       
@@ -108,7 +119,7 @@ class LoyverseService {
   }
 
   // Transformar orden a formato de recibo de Loyverse
-  transformOrderToReceipt(orderData) {
+  async transformOrderToReceipt(orderData) {
     const lineItems = orderData.items.map(item => {
       const modifiersTotal = item.modifiers?.reduce((sum, mod) => sum + (mod.price || 0), 0) || 0;
       
@@ -130,6 +141,18 @@ class LoyverseService {
       });
     }
 
+    // Obtener el primer tipo de pago disponible
+    let paymentTypeId = null;
+    try {
+      const paymentTypes = await this.getPaymentTypes();
+      if (paymentTypes && paymentTypes.length > 0) {
+        paymentTypeId = paymentTypes[0].id;
+        logger.info('Usando payment_type_id:', paymentTypeId);
+      }
+    } catch (error) {
+      logger.warn('No se pudo obtener tipos de pago, usando null');
+    }
+
     // Estructura básica del recibo
     const receipt = {
       store_id: this.config.credentials.storeId,
@@ -138,7 +161,7 @@ class LoyverseService {
       note: `Orden ${orderData.orderNumber} - ${orderData.customer?.name || 'Cliente'}`,
       line_items: lineItems,
       payments: [{
-        payment_type: 'CASH', // Usar tipo de pago por defecto
+        payment_type_id: paymentTypeId,
         amount: orderData.total
       }]
     };
