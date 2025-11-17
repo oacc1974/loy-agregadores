@@ -125,7 +125,7 @@ class UberService {
     return {
       orderNumber: uberOrder.display_id || uberOrder.id,
       customer: {
-        name: uberOrder.eater?.first_name + ' ' + uberOrder.eater?.last_name || 'Cliente',
+        name: (uberOrder.eater?.first_name || 'Cliente') + ' ' + (uberOrder.eater?.last_name || ''),
         phone: uberOrder.eater?.phone || '',
         address: uberOrder.delivery?.location?.address || ''
       },
@@ -137,7 +137,7 @@ class UberService {
           group.selected_items?.map(mod => ({
             name: mod.title,
             price: mod.price / 100
-          }))
+          })) || []
         ) || []
       })) || [],
       subtotal: uberOrder.payment?.charges?.subtotal / 100 || 0,
@@ -145,8 +145,8 @@ class UberService {
       deliveryFee: uberOrder.payment?.charges?.delivery_fee / 100 || 0,
       total: uberOrder.payment?.charges?.total / 100 || 0,
       paymentMethod: uberOrder.payment?.type || 'ONLINE',
-      orderTime: new Date(uberOrder.placed_at),
-      deliveryTime: uberOrder.estimated_ready_for_pickup_at ? new Date(uberOrder.estimated_ready_for_pickup_at) : null
+      orderTime: uberOrder.placed_at || new Date().toISOString(), // Mantener como string ISO
+      deliveryTime: uberOrder.estimated_ready_for_pickup_at || null
     };
   }
 }
