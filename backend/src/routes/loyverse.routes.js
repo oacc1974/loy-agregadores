@@ -6,7 +6,8 @@ const {
   getStores,
   getItems,
   getCategories,
-  createReceipt
+  createReceipt,
+  deleteConfig
 } = require('../controllers/loyverse.controller');
 const { protect } = require('../middleware/auth.middleware');
 
@@ -16,6 +17,7 @@ router.use(protect); // Todas las rutas requieren autenticación
 
 router.post('/configure', configure);
 router.get('/config', getConfig);
+router.delete('/config', deleteConfig);
 router.post('/test-connection', testConnection);
 router.get('/stores', getStores);
 router.get('/items', getItems);

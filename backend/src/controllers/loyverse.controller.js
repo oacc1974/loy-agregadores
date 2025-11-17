@@ -256,3 +256,31 @@ exports.createReceipt = async (req, res) => {
     });
   }
 };
+
+// @desc    Borrar configuración de Loyverse
+// @route   DELETE /api/loyverse/config
+exports.deleteConfig = async (req, res) => {
+  try {
+    const config = await LoyverseConfig.findOneAndDelete({ userId: req.user._id });
+
+    if (!config) {
+      return res.status(404).json({
+        success: false,
+        message: 'Configuración de Loyverse no encontrada'
+      });
+    }
+
+    logger.info('Configuración de Loyverse borrada para usuario:', req.user._id);
+
+    res.json({
+      success: true,
+      message: 'Configuración de Loyverse borrada exitosamente'
+    });
+  } catch (error) {
+    logger.error('Error borrando configuración de Loyverse:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Error del servidor'
+    });
+  }
+};

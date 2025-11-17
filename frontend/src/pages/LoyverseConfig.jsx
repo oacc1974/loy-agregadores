@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, TestTube, CheckCircle, XCircle, Loader } from 'lucide-react';
+import { Save, TestTube, CheckCircle, XCircle, Loader, Trash2 } from 'lucide-react';
 import Layout from '../components/layout/Layout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -10,6 +10,7 @@ const LoyverseConfig = () => {
   const [loading, setLoading] = useState(false);
   const [testing, setTesting] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [testResult, setTestResult] = useState(null);
   const [config, setConfig] = useState({
     accessToken: '',
@@ -119,6 +120,40 @@ const LoyverseConfig = () => {
       });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm('¿Estás seguro de que quieres borrar la configuración de Loyverse? Tendrás que volver a ingresarla.')) {
+      return;
+    }
+
+    setDeleting(true);
+    setTestResult(null);
+    try {
+      await api.delete('/loyverse/config');
+      
+      // Limpiar formulario
+      setConfig({
+        accessToken: '',
+        storeId: '',
+        posId: '',
+        defaultTaxRate: 0,
+        defaultPaymentType: 'CASH',
+        employeeId: ''
+      });
+      
+      setTestResult({
+        success: true,
+        message: '✅ Configuración borrada exitosamente. Ahora puedes ingresar una nueva configuración.'
+      });
+    } catch (error) {
+      setTestResult({
+        success: false,
+        message: '❌ Error: ' + (error.response?.data?.message || error.message)
+      });
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -323,6 +358,21 @@ const LoyverseConfig = () => {
             {saving ? 'Guardando...' : 'Guardar Configuración'}
           </Button>
         </div>
+
+        {/* Botón de Borrar (solo si hay configuración guardada) */}
+        {config.accessToken?.includes('...') && (
+          <div className="flex justify-center">
+            <Button
+              onClick={handleDelete}
+              disabled={deleting}
+              variant="destructive"
+              className="w-full md:w-auto"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              {deleting ? 'Borrando...' : 'Borrar Configuración'}
+            </Button>
+          </div>
+        )}
       </div>
     </Layout>
   );
