@@ -69,10 +69,16 @@ const LoyverseConfig = () => {
     setTesting(true);
     setTestResult(null);
     try {
-      const response = await api.post('/loyverse/test-connection', {
-        accessToken: config.accessToken,
+      // Si hay un token en el campo, usarlo; si no, el backend usará el guardado
+      const payload = {
         storeId: config.storeId
-      });
+      };
+      
+      if (config.accessToken && config.accessToken.trim() !== '') {
+        payload.accessToken = config.accessToken;
+      }
+      
+      const response = await api.post('/loyverse/test-connection', payload);
       setTestResult({
         success: true,
         message: response.data.message,
@@ -352,7 +358,7 @@ const LoyverseConfig = () => {
         <div className="flex gap-4">
           <Button
             onClick={handleTestConnection}
-            disabled={testing || !config.accessToken || !config.storeId}
+            disabled={testing || (!hasExistingToken && !config.accessToken) || !config.storeId}
             variant="outline"
             className="flex-1"
           >

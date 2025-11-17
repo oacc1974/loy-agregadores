@@ -102,8 +102,9 @@ exports.testConnection = async (req, res) => {
   try {
     const { accessToken, storeId } = req.body;
 
-    // Si se envían credenciales en el body, usarlas (para probar antes de guardar)
     let configToTest;
+    
+    // Si se envía accessToken, usarlo (para probar antes de guardar)
     if (accessToken && storeId) {
       configToTest = {
         credentials: {
@@ -112,17 +113,26 @@ exports.testConnection = async (req, res) => {
         }
       };
     } else {
-      // Si no, buscar configuración guardada
-      configToTest = await LoyverseConfig.findOne({ userId: req.user._id });
+      // Si no se envía accessToken, buscar configuración guardada
+      const savedConfig = await LoyverseConfig.findOne({ userId: req.user._id });
       
-      if (!configToTest) {
+      if (!savedConfig) {
         return res.status(404).json({
           success: false,
           message: 'Configuración de Loyverse no encontrada. Proporciona accessToken y storeId.'
         });
       }
+      
+      // Usar la configuración guardada, pero permitir override de storeId si se envía
+      configToTest = {
+        credentials: {
+          accessToken: savedConfig.credentials.accessToken,
+          storeId: storeId || savedConfig.credentials.storeId
+        }
+      };
     }
 
+    logger.info('Probando conexión con Loyverse...');
     const loyverseService = new LoyverseService(configToTest);
     const result = await loyverseService.testConnection();
 

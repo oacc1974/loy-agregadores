@@ -7,7 +7,10 @@ const logger = require('../utils/logger');
 // @route   POST /api/sync/manual
 exports.manualSync = async (req, res) => {
   try {
-    const result = await syncService.fullSync(req.user._id);
+    // Sincronizar solo las órdenes pendientes (no fetch de Uber)
+    // Esto es útil para pedidos simulados o cuando ya tienes órdenes en la BD
+    const syncService = new (require('../services/sync.service'))();
+    const result = await syncService.syncPendingOrders(req.user._id);
 
     res.json({
       success: true,
